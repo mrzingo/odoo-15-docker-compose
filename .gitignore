@@ -3,3 +3,15 @@ etc/odoo-server.log
 etc/addons/
 etc/sessions/
 etc/filestore/
+odoo-one/.gitignore
+odoo-one/docker-compose.yml
+odoo-one/entrypoint.sh
+odoo-one/README.md
+odoo-one/run.sh
+odoo-one/addons/readme.md
+odoo-one/etc/odoo.conf
+odoo-one/etc/requirements.txt
+odoo-one/screenshots/odoo-15-apps-screenshot.png
+odoo-one/screenshots/odoo-15-product-form.png
+odoo-one/screenshots/odoo-15-sales-screen.png
+odoo-one/screenshots/odoo-15-welcome-screenshot.png
