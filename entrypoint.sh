@@ -30,7 +30,7 @@ check_config "db_user" "$USER"
 check_config "db_password" "$PASSWORD"
 
 # Debug server port
-DEBUG_PORT=5678
+DEBUG_PORT=8888
 
 case "$1" in
     -- | odoo)
@@ -40,15 +40,16 @@ case "$1" in
         else
             wait-for-psql.py ${DB_ARGS[@]} --timeout=30
             # Wrap the odoo command with debugpy
-            exec python -m debugpy --listen ${DEBUG_PORT} --wait-for-client /usr/bin/odoo "$@" "${DB_ARGS[@]}"
+            exec python3 -m debugpy --listen ${DEBUG_PORT} /usr/bin/odoo "$@" "${DB_ARGS[@]}"
         fi
         ;;
     -*)
         wait-for-psql.py ${DB_ARGS[@]} --timeout=30
-        exec python -m debugpy --listen ${DEBUG_PORT} --wait-for-client /usr/bin/odoo "$@" "${DB_ARGS[@]}"
+        exec python3 -m debugpy --listen ${DEBUG_PORT} /usr/bin/odoo "$@" "${DB_ARGS[@]}"
         ;;
     *)
         exec "$@"
+        
 esac
-
+echo "${DB_ARGS[@]}"
 exit 1
