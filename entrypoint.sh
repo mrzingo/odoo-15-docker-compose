@@ -12,16 +12,15 @@ set -e
 # install python packages
 pip3 install pip --upgrade
 pip3 install -r /etc/odoo/requirements.txt
-
-# sed -i 's|raise werkzeug.exceptions.BadRequest(msg)|self.jsonrequest = {}|g' /usr/lib/python3/dist-packages/odoo/http.py
+pip3 install debugpy  # ensure debugpy is installed
 
 DB_ARGS=()
 function check_config() {
     param="$1"
     value="$2"
     if grep -q -E "^\s*\b${param}\b\s*=" "$ODOO_RC" ; then       
-        value=$(grep -E "^\s*\b${param}\b\s*=" "$ODOO_RC" |cut -d " " -f3|sed 's/["\n\r]//g')
-    fi;
+        value=$(grep -E "^\s*\b${param}\b\s*=" "$ODOO_RC" | cut -d " " -f3 | sed 's/["\n\r]//g')
+    fi
     DB_ARGS+=("--${param}")
     DB_ARGS+=("${value}")
 }
@@ -30,6 +29,9 @@ check_config "db_port" "$PORT"
 check_config "db_user" "$USER"
 check_config "db_password" "$PASSWORD"
 
+# Debug server port
+DEBUG_PORT=5678
+
 case "$1" in
     -- | odoo)
         shift
@@ -37,12 +39,13 @@ case "$1" in
             exec odoo "$@"
         else
             wait-for-psql.py ${DB_ARGS[@]} --timeout=30
-            exec odoo "$@" "${DB_ARGS[@]}"
+            # Wrap the odoo command with debugpy
+            exec python -m debugpy --listen ${DEBUG_PORT} --wait-for-client /usr/bin/odoo "$@" "${DB_ARGS[@]}"
         fi
         ;;
     -*)
         wait-for-psql.py ${DB_ARGS[@]} --timeout=30
-        exec odoo "$@" "${DB_ARGS[@]}"
+        exec python -m debugpy --listen ${DEBUG_PORT} --wait-for-client /usr/bin/odoo "$@" "${DB_ARGS[@]}"
         ;;
     *)
         exec "$@"
